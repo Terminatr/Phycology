@@ -1,0 +1,25 @@
+
+{
+
+  "type": "minecraft:block",
+  "pools": [
+    {
+
+      "name": "algae_block",
+      "rolls": 1,
+      "entries": [
+        {
+
+          "type": "minecraft:item",
+          "name": "phycology:algae_item"
+        }
+      ],
+      "conditions": [
+        {
+
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ]
+}

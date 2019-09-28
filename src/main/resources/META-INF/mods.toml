@@ -1,5 +1,5 @@
 modLoader="javafml" #mandatory
-loaderVersion="[28]" #mandatory. 26 for 1.14.2, 27 for 1.14.3
+loaderVersion="[28.1]" #mandatory. 26 for 1.14.2, 27 for 1.14.3
 credits="Thanks to all the supporters!" #optional
 [[mods]] #mandatory
 modId="phycology" #mandatory
