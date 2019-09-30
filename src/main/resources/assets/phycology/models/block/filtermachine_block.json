@@ -4,6 +4,6 @@
   "parent": "block/cube_all",
   "textures": {
 
-    "all": "phycology:block/algae_block"
+    "all": "phycology:block/filtermachine_block"
   }
 }

@@ -5,13 +5,13 @@
   "pools": [
     {
 
-      "name": "algae_block",
+      "name": "filtermachine_block",
       "rolls": 1,
       "entries": [
         {
 
           "type": "minecraft:item",
-          "name": "phycology:algae_item"
+          "name": "phycology:filtermachine_block"
         }
       ],
       "conditions": [
