@@ -1,7 +1,5 @@
 
 {
 
-  "item.phycology.algae_item": "Algae",
-
-  "block.phycology.algae_block": "Solidified Algae"
+  "block.phycology.filtermachine_block": "Filter Machine"
 }
