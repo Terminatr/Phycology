@@ -1,0 +1,11 @@
+
+{
+
+  "variants": {
+
+    "": [
+
+      { "model": "phycology:block/filter_machine" }
+    ]
+  }
+}
