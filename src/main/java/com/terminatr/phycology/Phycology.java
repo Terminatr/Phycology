@@ -4,9 +4,11 @@ package com.terminatr.phycology;
 import com.terminatr.phycology.client.ClientProxy;
 import com.terminatr.phycology.common.ServerProxy;
 import com.terminatr.phycology.common.core.PhycologyBlocks;
+import com.terminatr.phycology.common.core.PhycologyFluids;
 import com.terminatr.phycology.common.inventory.PhycologyContainerType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.network.PacketLoggingHandler;
@@ -28,7 +30,14 @@ public class Phycology {
     public Phycology() {
 
         instance = this;
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::preInit);
+
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+
+        modEventBus.addListener(this::preInit);
+
+        PhycologyFluids.BLOCKS.register(modEventBus);
+        PhycologyFluids.ITEMS.register(modEventBus);
+        PhycologyFluids.FLUIDS.register(modEventBus);
     }
 
     private void preInit(final FMLCommonSetupEvent event) {
