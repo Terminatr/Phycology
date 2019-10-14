@@ -4,6 +4,6 @@
   "parent": "item/generated",
   "textures": {
 
-    "layer0": "phycology:item/algae_item"
+    "layer0": "phycology:item/bucket_brine"
   }
 }

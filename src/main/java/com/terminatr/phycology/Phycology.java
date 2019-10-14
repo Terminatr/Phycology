@@ -1,17 +1,14 @@
 package com.terminatr.phycology;
 
-
 import com.terminatr.phycology.client.ClientProxy;
 import com.terminatr.phycology.common.ServerProxy;
 import com.terminatr.phycology.common.core.PhycologyBlocks;
 import com.terminatr.phycology.common.core.PhycologyFluids;
-import com.terminatr.phycology.common.inventory.PhycologyContainerType;
+import com.terminatr.phycology.common.fluids.BrineFluid;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.network.PacketLoggingHandler;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
