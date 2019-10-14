@@ -9,15 +9,27 @@ import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.IIntArray;
+import net.minecraft.util.IntArray;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
 
 public class FilterMachineContainer extends Container {
 
     private final IInventory inventory;
+    private final IIntArray filtermachineData;
 
-    private FilterMachineContainer(ContainerType<?> containerType, int windowId, PlayerInventory playerInventory) {
+    private final int inputSlot = 0;
+    private final int outputSlot = 1;
 
-        this(containerType, windowId, playerInventory, new Inventory(54));
-    }
+    private final int playerInventorySize = 27;
+    private final int playerHotbarSize = 9;
+
+    /*private FilterMachineContainer(ContainerType<?> containerType, int windowId, PlayerInventory playerInventory) {
+
+        this(containerType, windowId, playerInventory, new Inventory(2));
+    }*/
 
     public static FilterMachineContainer createFilterMachineContainer(int windowId, PlayerInventory playerInventory) {
 
@@ -25,39 +37,53 @@ public class FilterMachineContainer extends Container {
                 PhycologyBlocks.filtermachine_container,
                 windowId,
                 playerInventory,
-                new Inventory(54));
+                new Inventory(2),
+                new IntArray(2));
     }
 
-    public static FilterMachineContainer createFilterMachineContainer(int windowId, PlayerInventory playerInventory, IInventory inventory)
+    public static FilterMachineContainer createFilterMachineContainer(int windowId, PlayerInventory playerInventory, IInventory inventory, IIntArray filtermachineData)
     {
         return new FilterMachineContainer(
                 PhycologyBlocks.filtermachine_container,
                 windowId,
                 playerInventory,
-                inventory);
+                inventory,
+                filtermachineData);
     }
 
-    public FilterMachineContainer(ContainerType<?> containerType, int windowId, PlayerInventory playerInventory, IInventory inventory) {
+    public FilterMachineContainer(ContainerType<?> containerType, int windowId, PlayerInventory playerInventory, IInventory inventory, IIntArray filtermachineData) {
 
         super(containerType, windowId);
-        assertInventorySize(inventory, 1);
+        assertInventorySize(inventory, 0);
 
         this.inventory = inventory;
+        this.filtermachineData = filtermachineData;
 
         inventory.openInventory(playerInventory.player);
 
-        for (int chestRow = 0; chestRow < 6; chestRow++)
-        {
-            for (int chestCol = 0; chestCol < 9; chestCol++)
-            {
-                this.addSlot(new Slot(inventory, chestCol + chestRow * 9, 12 + chestCol * 18, 18 + chestRow * 18));
-            }
+        this.addSlot(new Slot(inventory, inputSlot, 57, 73));
+        this.addSlot(new Slot(inventory, outputSlot, 111, 73));
+
+        for (int player_hotbar = 0; player_hotbar < playerHotbarSize; player_hotbar++) {
+
+            this.addSlot(new Slot(playerInventory, player_hotbar, 12 + (player_hotbar % 9) * 18, 198 + (player_hotbar / 9) * 18));
         }
 
-        for (int i = 0; i < 36; i++) {
+        for (int player_inventory = 0; player_inventory < playerInventorySize; player_inventory++) {
 
-            this.addSlot(new Slot(playerInventory, i, 12 + (i % 9) * 18, 140 + (i / 9) * 18));
+            this.addSlot(new Slot(playerInventory, player_inventory + playerHotbarSize, 12 + (player_inventory % 9) * 18, 140 + (player_inventory / 9) * 18));
         }
+
+        this.trackIntArray(filtermachineData);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public int getProcessingProgressScaled() {
+
+        int progress = this.filtermachineData.get(0);
+        int progressTotal = this.filtermachineData.get(1);
+
+        return progressTotal != 0 && progress != 0 ? progress * 17 / progressTotal : 0;
     }
 
     @Override
@@ -84,14 +110,14 @@ public class FilterMachineContainer extends Container {
             ItemStack itemstack1 = slot.getStack();
             itemstack = itemstack1.copy();
 
-            if (index < 54)
+            if (index < 2)
             {
-                if (!this.mergeItemStack(itemstack1, 54, this.inventorySlots.size(), true))
+                if (!this.mergeItemStack(itemstack1, 2, this.inventorySlots.size(), false))
                 {
                     return ItemStack.EMPTY;
                 }
             }
-            else if (!this.mergeItemStack(itemstack1, 0, 54, false))
+            else if (!this.mergeItemStack(itemstack1, 0, 2, false))
             {
                 return ItemStack.EMPTY;
             }

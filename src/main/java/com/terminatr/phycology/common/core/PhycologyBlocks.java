@@ -29,8 +29,6 @@ import java.util.function.Supplier;
 
 public class PhycologyBlocks {
 
-    public static Item.Properties itemProperties;
-
     @ObjectHolder(BlockNames.FILTER_MACHINE)
     public static FilterMachineBlock filtermachine_block;
 
@@ -51,25 +49,20 @@ public class PhycologyBlocks {
         public static void registerBlocks(RegistryEvent.Register<Block> event) {
 
             IForgeRegistry<Block> blockRegistry = event.getRegistry();
+            Block.Properties blockProperties;
 
-            blockRegistry.register(new FilterMachineBlock(Block.Properties
-                    .create(Material.IRON).hardnessAndResistance(5)
-                    .harvestLevel(2)
-                    .harvestTool(ToolType.PICKAXE)
-                    ).setRegistryName(BlockNames.FILTER_MACHINE)
-            );
+            blockProperties = Block.Properties.create(Material.IRON).hardnessAndResistance(5).harvestLevel(2).harvestTool(ToolType.PICKAXE);
+            blockRegistry.register(new FilterMachineBlock(blockProperties).setRegistryName(BlockNames.FILTER_MACHINE));
         }
 
         @SubscribeEvent
         public static void registerItems(RegistryEvent.Register<Item> event) {
 
             IForgeRegistry<Item> itemRegistry = event.getRegistry();
+            Item.Properties itemProperties;
 
             itemProperties = (new Item.Properties().group(ItemGroup.BUILDING_BLOCKS));
-
-            itemRegistry.register(new BlockItem(filtermachine_block, itemProperties
-                    ).setRegistryName(filtermachine_block.getRegistryName())
-            );
+            itemRegistry.register(new BlockItem(filtermachine_block, itemProperties).setRegistryName(filtermachine_block.getRegistryName()));
         }
 
         @SubscribeEvent
@@ -86,8 +79,7 @@ public class PhycologyBlocks {
 
             IForgeRegistry<ContainerType<?>> containerRegistry = event.getRegistry();
 
-            containerRegistry.register(new ContainerType<>(FilterMachineContainer::createFilterMachineContainer
-            ).setRegistryName(ContainerNames.FILTER_MACHINE));
+            containerRegistry.register(new ContainerType<>(FilterMachineContainer::createFilterMachineContainer).setRegistryName(ContainerNames.FILTER_MACHINE));
         }
     }
 

@@ -11,6 +11,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+
 @OnlyIn(Dist.CLIENT)
 public class FilterMachineScreen extends ContainerScreen<FilterMachineContainer> implements IHasContainer<FilterMachineContainer> {
 
@@ -29,9 +30,9 @@ public class FilterMachineScreen extends ContainerScreen<FilterMachineContainer>
         this.textureXSize = 256;
         this.textureYSize = 256;
 
-        this.gui = new ResourceLocation(Phycology.MOD_ID, "textures/gui/filter_machine_screen.png");
+        this.gui = new ResourceLocation(Phycology.MOD_ID, "textures/gui/screen_machine_filter.png");
 
-        this.passEvents = false;
+        this.passEvents = true;
     }
 
     @Override
@@ -60,5 +61,9 @@ public class FilterMachineScreen extends ContainerScreen<FilterMachineContainer>
         int y = (this.height - this.ySize) / 2;
 
         this.blit(x, y, 0, 0, this.xSize, this.ySize, textureXSize, textureYSize);
+
+        int progressBar = this.container.getProcessingProgressScaled();
+
+        this.blit(x + 83, y + 78, 184, 0, progressBar + 1, 6);
     }
 }

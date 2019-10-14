@@ -1,5 +1,7 @@
 
 {
 
-  "block.phycology.filter_machine": "Filter Machine"
+  "block.phycology.filter_machine": "Filter Machine",
+
+  "item.phycology.brine_bucket": "Brine Bucket"
 }
