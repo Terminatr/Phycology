@@ -4,7 +4,6 @@ import com.terminatr.phycology.client.ClientProxy;
 import com.terminatr.phycology.common.ServerProxy;
 import com.terminatr.phycology.common.core.PhycologyBlocks;
 import com.terminatr.phycology.common.core.PhycologyFluids;
-import com.terminatr.phycology.common.fluids.BrineFluid;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;

@@ -63,7 +63,13 @@ public class FilterMachineScreen extends ContainerScreen<FilterMachineContainer>
         this.blit(x, y, 0, 0, this.xSize, this.ySize, textureXSize, textureYSize);
 
         int progressBar = this.container.getProcessingProgressScaled();
+        int waterLevel = this.container.getWaterLevelScaled();
 
-        this.blit(x + 83, y + 78, 184, 0, progressBar + 1, 6);
+        this.blit(x + 83, y + 65, 184, 0, progressBar + 1, 6);
+
+        this.blit(x + 12, y + 98 - waterLevel, 240, 128 - waterLevel, 16, waterLevel + 1);
+
+        this.blit(x + 12, y + 37, 208, 0, 16, 62);
+        this.blit(x + 156, y + 37, 208, 0, 16, 62);
     }
 }

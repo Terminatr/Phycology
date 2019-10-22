@@ -1,6 +1,7 @@
 package com.terminatr.phycology.common.inventory;
 
 import com.terminatr.phycology.common.core.PhycologyBlocks;
+import com.terminatr.phycology.common.tileentity.FilterMachineTileEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.IInventory;
@@ -20,16 +21,31 @@ public class FilterMachineContainer extends Container {
     private final IInventory inventory;
     private final IIntArray filtermachineData;
 
-    private final int inputSlot = 0;
-    private final int outputSlot = 1;
+    public enum FilterMachineSlots {
 
-    private final int playerInventorySize = 27;
+        WATER_INPUT(36, 44),
+        WATER_OUTPUT(36, 76),
+
+        BRINE_INPUT(132, 44),
+        BRINE_OUTPUT(132, 76),
+
+        CATALYST(84, 44),
+        MACHINE_OUTPUT(84, 76);
+
+        private int xPosition;
+        private int yPosition;
+
+        FilterMachineSlots(int x, int y) {
+
+            this.xPosition = x;
+            this.yPosition = y;
+        }
+    }
+
     private final int playerHotbarSize = 9;
-
-    /*private FilterMachineContainer(ContainerType<?> containerType, int windowId, PlayerInventory playerInventory) {
-
-        this(containerType, windowId, playerInventory, new Inventory(2));
-    }*/
+    private final int playerInventorySize = 27;
+    private final int playerHotbarStartIndex = FilterMachineSlots.values().length;
+    private final int playerInventoryStartIndex = playerHotbarStartIndex + playerHotbarSize;
 
     public static FilterMachineContainer createFilterMachineContainer(int windowId, PlayerInventory playerInventory) {
 
@@ -37,8 +53,8 @@ public class FilterMachineContainer extends Container {
                 PhycologyBlocks.filtermachine_container,
                 windowId,
                 playerInventory,
-                new Inventory(2),
-                new IntArray(2));
+                new Inventory(FilterMachineSlots.values().length),
+                new IntArray(FilterMachineTileEntity.FilterMachineData.values().length));
     }
 
     public static FilterMachineContainer createFilterMachineContainer(int windowId, PlayerInventory playerInventory, IInventory inventory, IIntArray filtermachineData)
@@ -51,18 +67,21 @@ public class FilterMachineContainer extends Container {
                 filtermachineData);
     }
 
-    public FilterMachineContainer(ContainerType<?> containerType, int windowId, PlayerInventory playerInventory, IInventory inventory, IIntArray filtermachineData) {
+    private FilterMachineContainer(ContainerType<?> containerType, int windowId, PlayerInventory playerInventory, IInventory inventory, IIntArray filtermachineData) {
 
         super(containerType, windowId);
-        assertInventorySize(inventory, 0);
+        assertInventorySize(inventory, FilterMachineSlots.values().length);
+        assertIntArraySize(filtermachineData, FilterMachineTileEntity.FilterMachineData.values().length);
 
         this.inventory = inventory;
         this.filtermachineData = filtermachineData;
 
         inventory.openInventory(playerInventory.player);
 
-        this.addSlot(new Slot(inventory, inputSlot, 57, 73));
-        this.addSlot(new Slot(inventory, outputSlot, 111, 73));
+        for (FilterMachineSlots slot : FilterMachineSlots.values()) {
+
+            this.addSlot(new Slot(inventory, slot.ordinal(), slot.xPosition, slot.yPosition));
+        }
 
         for (int player_hotbar = 0; player_hotbar < playerHotbarSize; player_hotbar++) {
 
@@ -80,10 +99,19 @@ public class FilterMachineContainer extends Container {
     @OnlyIn(Dist.CLIENT)
     public int getProcessingProgressScaled() {
 
-        int progress = this.filtermachineData.get(0);
-        int progressTotal = this.filtermachineData.get(1);
+        int progress = this.filtermachineData.get(FilterMachineTileEntity.FilterMachineData.PROCESSING_TIME.ordinal());
+        int progressTotal = this.filtermachineData.get(FilterMachineTileEntity.FilterMachineData.PROCESSING_TIME_TOTAL.ordinal());
 
         return progressTotal != 0 && progress != 0 ? progress * 17 / progressTotal : 0;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public int getWaterLevelScaled() {
+
+        int waterLevel = this.filtermachineData.get(FilterMachineTileEntity.FilterMachineData.WATER_LEVEL.ordinal());
+        int waterLevelMax = this.filtermachineData.get(FilterMachineTileEntity.FilterMachineData.WATER_LEVEL_MAX.ordinal());
+
+        return waterLevelMax != 0 && waterLevel != 0 ? waterLevel * 62 / waterLevelMax : 0;
     }
 
     @Override
@@ -103,32 +131,35 @@ public class FilterMachineContainer extends Container {
     public ItemStack transferStackInSlot(PlayerEntity playerIn, int index)
     {
         ItemStack itemstack = ItemStack.EMPTY;
-        Slot slot = this.inventorySlots.get(index);
+        Slot activeSlot = this.inventorySlots.get(index);
 
-        if (slot != null && slot.getHasStack())
+        if (activeSlot != null && activeSlot.getHasStack())
         {
-            ItemStack itemstack1 = slot.getStack();
+            ItemStack itemstack1 = activeSlot.getStack();
             itemstack = itemstack1.copy();
 
-            if (index < 2)
-            {
-                if (!this.mergeItemStack(itemstack1, 2, this.inventorySlots.size(), false))
-                {
+            if (index < playerHotbarStartIndex) {
+
+                if (!this.mergeItemStack(itemstack1, playerHotbarStartIndex, this.inventorySlots.size(), false)) {
+
+                    return ItemStack.EMPTY;
+                }
+
+                activeSlot.onSlotChange(itemstack1, itemstack);
+            } else if (index >= playerHotbarStartIndex) {
+
+                if (!this.mergeItemStack(itemstack1, 0, playerHotbarStartIndex, false)) {
+
                     return ItemStack.EMPTY;
                 }
             }
-            else if (!this.mergeItemStack(itemstack1, 0, 2, false))
-            {
-                return ItemStack.EMPTY;
-            }
 
-            if (itemstack1.isEmpty())
-            {
-                slot.putStack(ItemStack.EMPTY);
-            }
-            else
-            {
-                slot.onSlotChanged();
+            if (itemstack1.isEmpty()) {
+
+                activeSlot.putStack(ItemStack.EMPTY);
+            } else {
+
+                activeSlot.onSlotChanged();
             }
         }
 
