@@ -1,7 +1,6 @@
 package com.terminatr.phycology.common.tileentity;
 
 import com.terminatr.phycology.common.core.PhycologyBlocks;
-import com.terminatr.phycology.common.fluids.BrineFluid;
 import com.terminatr.phycology.common.inventory.FilterMachineContainer;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.ItemStackHelper;
@@ -23,28 +22,65 @@ import net.minecraft.util.text.TranslationTextComponent;
 public class FilterMachineTileEntity extends LockableLootTileEntity implements INamedContainerProvider, ITickableTileEntity {
 
     private NonNullList<ItemStack> machineContents;
+
+    public enum FilterMachineData {
+
+        PROCESSING_TIME,
+        PROCESSING_TIME_TOTAL,
+
+        WATER_LEVEL_MIN,
+        WATER_LEVEL_MAX,
+        WATER_LEVEL,
+
+        BRINE_LEVEL_MIN,
+        BRINE_LEVEL_MAX,
+        BRINE_LEVEL
+    }
+
     private int processingTime = 0;
-    private int processingTimeTotal = 200;
+    private final int processingTimeTotal = 200;
+
+    private final int waterLevelMin = 0;
+    private final int waterLevelMax = 10;
+    private int waterLevel = waterLevelMin;
+
+    private final int brineLevelMin = 0;
+    private final int brineLevelMax = 10;
+    private int brineLevel = brineLevelMin;
 
     protected final IIntArray filtermachineData = new IIntArray() {
 
         public int get(int index) {
 
-            switch (index) {
-                case 0:
+            FilterMachineData[] dataValues = FilterMachineData.values();
+
+            FilterMachineData data = dataValues[index];
+
+            switch (data) {
+
+                case PROCESSING_TIME:
                     return FilterMachineTileEntity.this.processingTime;
 
-                case 1:
+                case PROCESSING_TIME_TOTAL:
                     return FilterMachineTileEntity.this.processingTimeTotal;
 
+                case WATER_LEVEL:
+                    return FilterMachineTileEntity.this.waterLevel;
+
+                case WATER_LEVEL_MAX:
+                    return FilterMachineTileEntity.this.waterLevelMax;
+
+                case BRINE_LEVEL:
+                    return FilterMachineTileEntity.this.brineLevel;
+
                 default:
-                    return 0;
+                    return -1;
             }
         }
 
         public void set(int index, int value) {
 
-            switch (index) {
+            /*switch (index) {
 
                 case 0:
                     FilterMachineTileEntity.this.processingTime = value;
@@ -53,18 +89,21 @@ public class FilterMachineTileEntity extends LockableLootTileEntity implements I
                 case 1:
                     FilterMachineTileEntity.this.processingTimeTotal = value;
                     break;
-            }
+
+                case 2:
+                    FilterMachineTileEntity.this.waterLevel = value;
+            }*/
 
         }
 
-        public int size() { return 2; }
+        public int size() { return FilterMachineData.values().length; }
     };
 
     protected FilterMachineTileEntity(TileEntityType<?> typeIn) {
 
         super(typeIn);
 
-        this.machineContents = NonNullList.<ItemStack>withSize(2, ItemStack.EMPTY);
+        this.machineContents = NonNullList.<ItemStack>withSize(FilterMachineContainer.FilterMachineSlots.values().length, ItemStack.EMPTY);
     }
 
     public FilterMachineTileEntity() {
@@ -119,7 +158,7 @@ public class FilterMachineTileEntity extends LockableLootTileEntity implements I
     @Override
     public void setItems(NonNullList<ItemStack> itemsIn) {
 
-        this.machineContents = NonNullList.<ItemStack>withSize(2, ItemStack.EMPTY);
+        this.machineContents = NonNullList.<ItemStack>withSize(FilterMachineContainer.FilterMachineSlots.values().length, ItemStack.EMPTY);
 
         for (int i = 0; i < itemsIn.size(); i++) {
 
@@ -140,6 +179,8 @@ public class FilterMachineTileEntity extends LockableLootTileEntity implements I
         if (!this.checkLootAndRead(compound))
         {
             ItemStackHelper.loadAllItems(compound, this.machineContents);
+            waterLevel = compound.getInt("water");
+            brineLevel = compound.getInt("brine");
         }
     }
 
@@ -151,6 +192,8 @@ public class FilterMachineTileEntity extends LockableLootTileEntity implements I
         if (!this.checkLootAndWrite(compound))
         {
             ItemStackHelper.saveAllItems(compound, this.machineContents);
+            compound.putInt("water", waterLevel);
+            compound.putInt("brine", brineLevel);
         }
 
         return compound;
@@ -161,25 +204,81 @@ public class FilterMachineTileEntity extends LockableLootTileEntity implements I
 
         if (!this.world.isRemote) {
 
-            ItemStack itemstack = this.machineContents.get(0);
+            ItemStack itemstack = this.machineContents.get(FilterMachineContainer.FilterMachineSlots.WATER_INPUT.ordinal());
 
-            if (!itemstack.isEmpty()) {
+            if (!itemstack.isEmpty() && itemstack.isItemEqual(new ItemStack(Items.WATER_BUCKET)) && canAddWater()) {
 
-                this.processingTime++;
-            } else {
+                this.waterLevel++;
 
-                this.processingTime = 0;
-            }
+                this.machineContents.set(FilterMachineContainer.FilterMachineSlots.WATER_INPUT.ordinal(), ItemStack.EMPTY);
+                this.machineContents.set(FilterMachineContainer.FilterMachineSlots.WATER_OUTPUT.ordinal(), new ItemStack(Items.BUCKET));
 
-            if (itemstack.isItemEqual(new ItemStack(Items.WATER_BUCKET))) {
+                /*this.processingTime++;
 
                 if (this.processingTime >= this.processingTimeTotal) {
 
                     this.machineContents.set(1, new ItemStack(BrineFluid.BRINE_BUCKET.get()));
                     this.machineContents.set(0, ItemStack.EMPTY);
                     this.processingTime = 0;
-                }
+                }*/
+            } else if (!itemstack.isEmpty() && itemstack.isItemEqual(new ItemStack(Items.BUCKET)) && canRemoveWater()) {
+
+                this.waterLevel--;
+
+                this.machineContents.set(FilterMachineContainer.FilterMachineSlots.WATER_INPUT.ordinal(), ItemStack.EMPTY);
+                this.machineContents.set(FilterMachineContainer.FilterMachineSlots.WATER_OUTPUT.ordinal(), new ItemStack(Items.WATER_BUCKET));
+            } else {
+
+                this.processingTime = 0;
             }
+        }
+    }
+
+    private boolean canAddWater() {
+
+        if (this.waterLevel >= this.waterLevelMax) {
+
+            this.waterLevel = this.waterLevelMax;
+            return false;
+        } else {
+
+            return true;
+        }
+    }
+
+    private boolean canRemoveWater() {
+
+        if (this.waterLevel <= this.waterLevelMin) {
+
+            this.waterLevel = this.waterLevelMin;
+            return false;
+        } else {
+
+            return true;
+        }
+    }
+
+    private boolean canAddBrine() {
+
+        if (this.brineLevel >= this.brineLevelMax) {
+
+            this.brineLevel = this.brineLevelMax;
+            return false;
+        } else {
+
+            return true;
+        }
+    }
+
+    private boolean canRemoveBrine() {
+
+        if (this.brineLevel <= this.brineLevelMin) {
+
+            this.brineLevel = this.brineLevelMin;
+            return false;
+        } else {
+
+            return true;
         }
     }
 }
